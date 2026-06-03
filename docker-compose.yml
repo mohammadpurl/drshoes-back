@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: drshoes-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: drshoes
+    ports:
+      - "5432:5432"
+    volumes:
+      - drshoes_pg_data:/var/lib/postgresql/data
+
+volumes:
+  drshoes_pg_data:

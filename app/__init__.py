@@ -1,0 +1,1 @@
+"""Dr.Shoes FastAPI backend."""
