@@ -1,6 +1,4 @@
-"""Vercel serverless entry — FastAPI via Mangum."""
-from mangum import Mangum
-
+"""Vercel entrypoint — re-export FastAPI app (ASGI native, no Mangum)."""
 from app.main import app
 
-handler = Mangum(app, lifespan="auto")
+__all__ = ["app"]
