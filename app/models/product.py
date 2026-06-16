@@ -25,6 +25,7 @@ class Product(Base):
     is_special: Mapped[bool] = mapped_column(Boolean, default=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     images: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    videos: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
     tags: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
     foot_types: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
     surfaces: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)

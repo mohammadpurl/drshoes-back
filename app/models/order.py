@@ -14,6 +14,15 @@ class Order(Base):
         String(36), ForeignKey("users.id", ondelete="CASCADE"), index=True
     )
     status: Mapped[str] = mapped_column(String(32), default="pending", index=True)
+    payment_status: Mapped[str] = mapped_column(
+        String(32), default="awaiting_receipt", index=True
+    )
+    receipt_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    receipt_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    receipt_uploaded_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    payment_review_note: Mapped[str | None] = mapped_column(Text, nullable=True)
     subtotal: Mapped[int] = mapped_column(Integer, nullable=False)
     shipping_cost: Mapped[int] = mapped_column(Integer, default=0)
     total: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -25,6 +34,13 @@ class Order(Base):
     shipping_city: Mapped[str] = mapped_column(String(64), nullable=False)
     shipping_address: Mapped[str] = mapped_column(String(512), nullable=False)
     shipping_postal_code: Mapped[str] = mapped_column(String(16), nullable=False)
+
+    shipping_method: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    tracking_number: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    shipping_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    shipped_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

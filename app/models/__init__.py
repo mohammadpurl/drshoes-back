@@ -3,6 +3,7 @@ from app.models.cart import Cart, CartItem
 from app.models.order import Order, OrderItem
 from app.models.product import Product
 from app.models.review import Review
+from app.models.shop_config import ShopConfig
 from app.models.user import User
 
 __all__ = [
@@ -13,5 +14,6 @@ __all__ = [
     "OrderItem",
     "Product",
     "Review",
+    "ShopConfig",
     "User",
 ]

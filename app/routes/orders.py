@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_cart_token, get_current_user
@@ -50,6 +50,24 @@ async def get_order(
 ):
     service = OrderService(db)
     order = await service.get_by_id(user.id, order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="سفارش یافت نشد")
+    return OrderRead.model_validate(order)
+
+
+@router.post("/{order_id}/receipt", response_model=OrderRead)
+async def upload_receipt(
+    order_id: str,
+    file: UploadFile = File(...),
+    note: str | None = Form(None),
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    service = OrderService(db)
+    try:
+        order = await service.upload_receipt(user.id, order_id, file, note)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
     if not order:
         raise HTTPException(status_code=404, detail="سفارش یافت نشد")
     return OrderRead.model_validate(order)

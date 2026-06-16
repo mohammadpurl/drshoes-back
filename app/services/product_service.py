@@ -6,6 +6,7 @@ from app.models.product import Product
 from app.schemas.admin_product import ProductCreate, ProductUpdate
 from app.schemas.product import ProductFilters, SortOption
 from app.utils.ids import new_product_id
+from app.utils.slugify import slugify
 
 
 class ProductService:
@@ -129,13 +130,17 @@ class ProductService:
         return result.scalar_one_or_none()
 
     async def create(self, data: ProductCreate) -> Product:
-        existing = await self.get_by_slug(data.slug)
+        final_slug = (data.slug or slugify(data.name)).strip()
+        if not final_slug:
+            raise ValueError("اسلاگ معتبر نیست")
+
+        existing = await self.get_by_slug(final_slug)
         if existing:
             raise ValueError("اسلاگ تکراری است")
 
         product = Product(
             id=new_product_id(),
-            slug=data.slug,
+            slug=final_slug,
             name=data.name,
             brand=data.brand,
             category=data.category,
@@ -151,6 +156,7 @@ class ProductService:
             is_special=data.is_special,
             description=data.description,
             images=data.images,
+            videos=data.videos,
             tags=data.tags,
             foot_types=data.foot_type,
             surfaces=data.surface,

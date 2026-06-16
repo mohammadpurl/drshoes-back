@@ -1,6 +1,8 @@
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_serializer
+
+from app.utils.media_urls import normalize_media_list
 
 
 class SortOption(str, Enum):
@@ -39,10 +41,19 @@ class ProductRead(BaseModel):
     isBestseller: bool = Field(validation_alias="is_bestseller")
     isSpecial: bool = Field(False, validation_alias="is_special")
     images: list[str]
+    videos: list[str] = Field(default_factory=list)
     description: str
     tags: list[str]
     rating: float | None = None
     reviewCount: int = Field(0, validation_alias="review_count")
+
+    @field_serializer("images")
+    def serialize_images(self, images: list[str]) -> list[str]:
+        return normalize_media_list(images)
+
+    @field_serializer("videos")
+    def serialize_videos(self, videos: list[str]) -> list[str]:
+        return normalize_media_list(videos)
 
     def model_dump(self, **kwargs):
         kwargs.setdefault("by_alias", True)

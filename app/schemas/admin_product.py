@@ -2,7 +2,11 @@ from pydantic import BaseModel, Field
 
 
 class ProductCreate(BaseModel):
-    slug: str = Field(max_length=128)
+    slug: str | None = Field(
+        None,
+        max_length=128,
+        description="اگر خالی باشد از name ساخته می‌شود",
+    )
     name: str = Field(max_length=255)
     brand: str = Field(max_length=64)
     category: str = Field(max_length=32)
@@ -18,6 +22,7 @@ class ProductCreate(BaseModel):
     is_special: bool = Field(False, alias="isSpecial")
     description: str
     images: list[str] = Field(default_factory=list)
+    videos: list[str] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
     foot_type: list[str] = Field(default_factory=list, alias="footType")
     surface: list[str] = Field(default_factory=list)
@@ -44,6 +49,7 @@ class ProductUpdate(BaseModel):
     is_special: bool | None = Field(None, alias="isSpecial")
     description: str | None = None
     images: list[str] | None = None
+    videos: list[str] | None = None
     tags: list[str] | None = None
     foot_type: list[str] | None = Field(None, alias="footType")
     surface: list[str] | None = None
@@ -55,3 +61,10 @@ class ProductUpdate(BaseModel):
 
 class UploadResponse(BaseModel):
     url: str
+
+
+class MediaUploadResponse(BaseModel):
+    url: str
+    key: str
+    kind: str  # image | video
+    contentType: str

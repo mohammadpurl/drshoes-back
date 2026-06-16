@@ -11,16 +11,28 @@ python -m venv .venv
 pip install -r requirements.txt
 copy .env.example .env
 docker compose up -d
-python -m scripts.seed
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+در **اولین اجرا** سرور خودکار:
+- جداول را می‌سازد (`create_all`)
+- کاربر ادمین پیش‌فرض را اضافه می‌کند (اگر `users` خالی باشد)
+- اگر محصولی نباشد، `data/products.json` را import می‌کند
+
+اسکریپت `python -m scripts.seed` فقط برای اجرای دستی همان فرایند است (اختیاری).
+
 - API: http://localhost:8000/docs
-- ادمین پیش‌فرض (بعد از seed): `admin@drshoes.local` / `admin123456`
+- ادمین پیش‌فرض (اولین اجرا): `admin@drshoes.local` / `admin123456`
 
-## ذخیرهٔ تصاویر
+## ذخیرهٔ تصویر و ویدئو (MinIO / S3)
 
-### روش فعلی (لوکال — مناسب توسعه و سرور خودتان)
+راهنمای کامل: **[docs/STORAGE.md](docs/STORAGE.md)**
+
+خلاصه: `docker compose up -d minio` → تنظیم `.env` با `STORAGE_BACKEND=s3` → در MinIO Console باکت را **public** کنید → آپلود با `POST /api/v1/admin/uploads/media`.
+
+---
+
+## ذخیرهٔ تصاویر (نسخهٔ قدیمی — local)
 
 1. ادمین تصویر را آپلود می‌کند: `POST /api/v1/admin/uploads/image` (Bearer ادمین + `multipart/form-data`)
 2. فایل در پوشه `Backend/uploads/products/` ذخیره می‌شود

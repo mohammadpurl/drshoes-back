@@ -81,6 +81,19 @@ class CartService:
         await self.db.commit()
         return await self._load_cart(user_cart.id)  # type: ignore[return-value]
 
+    async def resolve_cart(
+        self, user: User | None, session_token: str | None
+    ) -> tuple[Cart, str | None]:
+        if user:
+            if session_token:
+                cart = await self.merge_guest_into_user(user, session_token)
+            else:
+                cart = await self.get_or_create_for_user(user)
+            return cart, None
+
+        cart, token = await self.get_or_create_guest(session_token)
+        return cart, token
+
     def _validate_size(self, product: Product, size: int) -> None:
         if size not in product.sizes:
             raise ValueError("سایز انتخاب‌شده برای این محصول موجود نیست")

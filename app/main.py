@@ -6,12 +6,18 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import engine
+from app.db_init import bootstrap_database
 from app.routes import api_router
+from app.services.storage_service import ensure_storage_ready
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    settings.upload_dir.mkdir(parents=True, exist_ok=True)
+    if not settings.use_s3:
+        settings.media_dir.mkdir(parents=True, exist_ok=True)
+        (settings.media_dir / "products").mkdir(parents=True, exist_ok=True)
+    await ensure_storage_ready()
+    await bootstrap_database()
     yield
     await engine.dispose()
 
@@ -33,11 +39,12 @@ app.add_middleware(
 
 app.include_router(api_router, prefix=settings.api_prefix)
 
-app.mount(
-    "/static",
-    StaticFiles(directory=settings.upload_dir),
-    name="static",
-)
+if not settings.use_s3:
+    app.mount(
+        "/static",
+        StaticFiles(directory=settings.media_dir),
+        name="static",
+    )
 
 
 @app.get("/")

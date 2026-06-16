@@ -1,26 +1,30 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AddressCreate(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     title: str = Field(max_length=64)
-    full_name: str = Field(max_length=128)
+    full_name: str = Field(max_length=128, alias="fullName")
     phone: str = Field(max_length=20)
     province: str = Field(max_length=64)
     city: str = Field(max_length=64)
-    address_line: str = Field(max_length=512)
-    postal_code: str = Field(max_length=16)
-    is_default: bool = False
+    address_line: str = Field(max_length=512, alias="addressLine")
+    postal_code: str = Field(max_length=16, alias="postalCode")
+    is_default: bool = Field(False, alias="isDefault")
 
 
 class AddressUpdate(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     title: str | None = None
-    full_name: str | None = None
+    full_name: str | None = Field(None, alias="fullName")
     phone: str | None = None
     province: str | None = None
     city: str | None = None
-    address_line: str | None = None
-    postal_code: str | None = None
-    is_default: bool | None = None
+    address_line: str | None = Field(None, alias="addressLine")
+    postal_code: str | None = Field(None, alias="postalCode")
+    is_default: bool | None = Field(None, alias="isDefault")
 
 
 class AddressRead(BaseModel):
@@ -34,8 +38,8 @@ class AddressRead(BaseModel):
     postalCode: str = Field(validation_alias="postal_code")
     isDefault: bool = Field(validation_alias="is_default")
 
-    model_config = {
-        "from_attributes": True,
-        "populate_by_name": True,
-        "ser_json_by_alias": True,
-    }
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        ser_json_by_alias=True,
+    )
