@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -39,7 +40,8 @@ app.add_middleware(
 
 app.include_router(api_router, prefix=settings.api_prefix)
 
-if not settings.use_s3:
+# Local static media — not available on Vercel serverless; use STORAGE_BACKEND=s3
+if not settings.use_s3 and not os.environ.get("VERCEL"):
     app.mount(
         "/static",
         StaticFiles(directory=settings.media_dir),

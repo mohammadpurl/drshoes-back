@@ -1,0 +1,6 @@
+"""Vercel serverless entry — FastAPI via Mangum."""
+from mangum import Mangum
+
+from app.main import app
+
+handler = Mangum(app, lifespan="auto")
