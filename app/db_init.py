@@ -8,7 +8,7 @@ from sqlalchemy import select, text
 
 from app.config import settings
 from app.core.security import hash_password
-from app.database import AsyncSessionLocal, Base, engine
+from app.database import AsyncSessionLocal, Base, engine, validate_database_url
 from app.models import (  # noqa: F401 — register all models on Base.metadata
     Address,
     Cart,
@@ -228,6 +228,7 @@ async def bootstrap_database(*, seed_catalog: bool = True) -> None:
     Run on app startup: create missing tables, default admin, optional catalog seed.
     Safe to call every time (idempotent).
     """
+    validate_database_url()
     await create_tables()
 
     async with AsyncSessionLocal() as session:
