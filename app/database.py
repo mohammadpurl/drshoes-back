@@ -45,9 +45,10 @@ def _connect_args(url: str) -> dict:
         # asyncpg needs an SSL context object, not the string "require"
         args["ssl"] = ssl.create_default_context()
 
-    # Supabase pooler (PgBouncer transaction mode) — required for serverless
-    if "pooler.supabase.com" in lowered or ":6543" in lowered:
+    # Supabase uses PgBouncer — prepared statements must be disabled for asyncpg
+    if "supabase.co" in lowered or "pooler.supabase.com" in lowered:
         args["statement_cache_size"] = 0
+        args["prepared_statement_cache_size"] = 0
 
     return args
 
