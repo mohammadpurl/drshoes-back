@@ -1,22 +1,36 @@
 from contextlib import asynccontextmanager
-import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
+from app.utils.runtime import is_serverless_runtime
 from app.database import engine
 from app.db_init import bootstrap_database
 from app.routes import api_router
 from app.services.storage_service import ensure_storage_ready
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    if not settings.use_s3:
+def _is_serverless_runtime() -> bool:
+    return is_serverless_runtime()
+
+
+def _ensure_local_media_dirs() -> None:
+    """Create media folders for local dev only; never crash on read-only FS."""
+    if settings.use_s3 or is_serverless_runtime():
+        return
+    try:
         settings.media_dir.mkdir(parents=True, exist_ok=True)
         (settings.media_dir / "products").mkdir(parents=True, exist_ok=True)
+    except OSError:
+        # e.g. Vercel /var/task is read-only even if VERCEL env is unset
+        pass
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    _ensure_local_media_dirs()
     await ensure_storage_ready()
     await bootstrap_database()
     yield
@@ -41,7 +55,7 @@ app.add_middleware(
 app.include_router(api_router, prefix=settings.api_prefix)
 
 # Local static media — not available on Vercel serverless; use STORAGE_BACKEND=s3
-if not settings.use_s3 and not os.environ.get("VERCEL"):
+if not settings.use_s3 and not _is_serverless_runtime():
     app.mount(
         "/static",
         StaticFiles(directory=settings.media_dir),

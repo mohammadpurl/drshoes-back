@@ -8,6 +8,7 @@ from fastapi import HTTPException, UploadFile, status
 
 from app.config import settings
 from app.utils.media_urls import build_media_url
+from app.utils.runtime import is_serverless_runtime
 
 logger = logging.getLogger(__name__)
 
@@ -98,9 +99,20 @@ class StorageService:
         }
 
     def _upload_local(self, key: str, data: bytes) -> None:
+        if is_serverless_runtime():
+            raise RuntimeError(
+                "آپلود فایل روی Vercel ممکن نیست. تصاویر را در media/products "
+                "قرار دهید و commit کنید، یا STORAGE_BACKEND=s3 تنظیم کنید."
+            )
         path = settings.media_dir / key
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(data)
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(data)
+        except OSError as e:
+            raise RuntimeError(
+                "ذخیرهٔ محلی فایل ممکن نیست (دیسک فقط خواندنی). "
+                "از S3 یا قرار دادن فایل در media/products استفاده کنید."
+            ) from e
 
     def _s3_client(self):
         try:

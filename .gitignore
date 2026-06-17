@@ -5,6 +5,8 @@ __pycache__/
 .env
 media/*
 !media/.gitkeep
-!media/products/.gitkeep
+!media/products/
+!media/products/**
+!media/receipts/
 .pytest_cache/
 .mypy_cache/
