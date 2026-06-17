@@ -35,6 +35,26 @@ def _normalize_database_url(url: str) -> str:
     return url
 
 
+def _cloud_ssl_context(url: str) -> ssl.SSLContext:
+    """Build SSL context for managed Postgres (asyncpg)."""
+    lowered = url.lower()
+    try:
+        import certifi
+
+        ctx = ssl.create_default_context(cafile=certifi.where())
+    except ImportError:
+        ctx = ssl.create_default_context()
+
+    # Supabase pooler on Vercel/Lambda: CA chain often fails strict verification
+    if "supabase.co" in lowered and (
+        is_serverless_runtime() or "pooler.supabase.com" in lowered
+    ):
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+    return ctx
+
+
 def _connect_args(url: str) -> dict:
     lowered = url.lower()
     args: dict = {}
@@ -42,8 +62,7 @@ def _connect_args(url: str) -> dict:
     if any(marker in lowered for marker in _CLOUD_SSL_MARKERS) or (
         "sslmode=require" in lowered or "ssl=require" in lowered
     ):
-        # asyncpg needs an SSL context object, not the string "require"
-        args["ssl"] = ssl.create_default_context()
+        args["ssl"] = _cloud_ssl_context(url)
 
     # Supabase uses PgBouncer — prepared statements must be disabled for asyncpg
     if "supabase.co" in lowered or "pooler.supabase.com" in lowered:
